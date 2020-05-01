@@ -1,5 +1,8 @@
 import "reflect-metadata";
 import { Application, RequestHandler, Router, application } from "express";
+import fs from "fs";
+import path from "path";
+import "colors";
 
 export interface RouteDefinition {
     path: string;
@@ -8,30 +11,50 @@ export interface RouteDefinition {
     middlewares: RequestHandler[];
 }
 
-declare module "express-serve-static-core" {
-    interface Application {
-        registerController(controllers: any[]): void;
-        registerController(controllers: any): void;
-    }
-}
+export class Decorated {
+    static app: Application;
+    public static setApp = (app: Application, pathToControllers: string) => {
+        Decorated.app = app;
+        let regexp = new RegExp(".controller.ts$");
+        fs.readdir(pathToControllers, (err, files) => {
+            if (err) {
+                if (err.code === "ENOENT") {
+                    console.error();
+                    console.error(`[ERROR] Specified controllers path does not exist`.red);
+                    console.error(pathToControllers.white);
+                    console.error();
+                }
 
-application.registerController = function (this, controllers: any) {
-    if (Array.isArray(controllers)) {
-        controllers.forEach((controller) => registerOneController(this, controller));
-    } else {
-        registerOneController(this, controllers);
-    }
-};
+                return;
+            }
+            files.forEach(async (filename) => {
+                if (!filename.match(regexp)) {
+                    return;
+                }
+                let fullPath = path.join(pathToControllers, filename);
+                try {
+                    import(fullPath);
+                } catch (error) {
+                    console.error();
+                    console.error(`[ERROR] Could not load controller :`.red);
+                    console.error(fullPath.white);
+                    console.error();
+                }
+            });
+        });
+    };
+}
 
 export const Controller = (prefix: string = "", middlewares: RequestHandler[] = []): ClassDecorator => {
     return (target: any) => {
         Reflect.defineMetadata("prefix", prefix, target);
         Reflect.defineMetadata("middlewares", middlewares, target);
 
-        // Since routes are set by our methods this should almost never be true (except the controller has no methods)
         if (!Reflect.hasMetadata("routes", target)) {
             Reflect.defineMetadata("routes", [], target);
         }
+
+        registerOneController(Decorated.app, target);
     };
 };
 

@@ -22,10 +22,12 @@
     "scripts": {
         "build": "tsc && rm -rf dist/__tests__ && rm -rf dist/test_server",
         "prepare": "npm run build",
-        "test": "jest --config jestconfig.json"
+        "test": "jest --config jestconfig.json",
+        "start": "ts-node src/test_server/server.ts"
     },
     "dependencies": {
         "@types/supertest": "^2.0.8",
+        "colors": "^1.4.0",
         "express": "^4.17.1",
         "reflect-metadata": "^0.1.13"
     }
