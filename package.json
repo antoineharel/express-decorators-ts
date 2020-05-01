@@ -20,7 +20,7 @@
         "typescript": "^3.8.3"
     },
     "scripts": {
-        "build": "tsc",
+        "build": "tsc && rm -rf dist/__tests__ && rm -rf dist/test_server",
         "prepare": "npm run build",
         "test": "jest --config jestconfig.json"
     },
