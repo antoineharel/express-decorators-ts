@@ -15,7 +15,7 @@ export class Decorated {
     static app: Application;
     public static setApp = (app: Application, pathToControllers: string) => {
         Decorated.app = app;
-        let regexp = new RegExp(".controller.ts$");
+        let regexp = new RegExp(".controller.(ts|js)$");
         fs.readdir(pathToControllers, (err, files) => {
             if (err) {
                 if (err.code === "ENOENT") {
