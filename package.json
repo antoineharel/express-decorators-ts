@@ -1,6 +1,6 @@
 {
     "name": "express-decorators-ts",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "A bunch of decorators for express in TypeScript",
     "main": "dist/index.js",
     "author": "Antoine HAREL",
