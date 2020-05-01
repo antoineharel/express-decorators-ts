@@ -1,6 +1,19 @@
 import "reflect-metadata";
 import { Application, RequestHandler, Router, application } from "express";
-import { RouteDefinition } from "./types";
+
+export interface RouteDefinition {
+    path: string;
+    requestMethod: "get" | "post" | "delete" | "options" | "put";
+    methodName: string;
+    middlewares: RequestHandler[];
+}
+
+declare module "express-serve-static-core" {
+    interface Application {
+        registerController(controllers: any[]): void;
+        registerController(controllers: any): void;
+    }
+}
 
 application.registerController = function (this, controllers: any) {
     if (Array.isArray(controllers)) {
