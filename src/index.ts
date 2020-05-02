@@ -90,7 +90,12 @@ const registerOneController = (app: Application, controller: any) => {
     let router = Router();
 
     routes.forEach((route) => {
-        router[route.requestMethod](route.path, ...route.middlewares, instance[route.methodName]);
+        let method = route.requestMethod;
+        let path = route.path;
+        let middlewares = route.middlewares;
+        let handler = instance[route.methodName];
+
+        router[method](path, ...middlewares, handler);
     });
 
     app.use(prefix, controllerMiddlewares, router);
