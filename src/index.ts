@@ -1,8 +1,7 @@
-import "reflect-metadata";
-import { Application, RequestHandler, Router, application } from "express";
-import fs from "fs";
-import path from "path";
 import "colors";
+import { Application, RequestHandler, Router } from "express";
+import recursive from "recursive-readdir";
+import "reflect-metadata";
 
 export interface RouteDefinition {
     path: string;
@@ -15,29 +14,23 @@ export class Decorated {
     static app: Application;
     public static setApp = (app: Application, pathToControllers: string) => {
         Decorated.app = app;
-        let regexp = new RegExp(".controller.(ts|js)$");
-        fs.readdir(pathToControllers, (err, files) => {
+
+        recursive(pathToControllers, ["!*.controller.*"], (err, files) => {
             if (err) {
-                if (err.code === "ENOENT") {
-                    console.error();
-                    console.error(`[ERROR] Specified controllers path does not exist`.red);
-                    console.error(pathToControllers.white);
-                    console.error();
-                }
+                console.error();
+                console.error(`[ERROR] Specified controllers path does not exist`.red);
+                console.error(pathToControllers.white);
+                console.error();
 
                 return;
             }
-            files.forEach(async (filename) => {
-                if (!filename.match(regexp)) {
-                    return;
-                }
-                let fullPath = path.join(pathToControllers, filename);
+            files.forEach((file) => {
                 try {
-                    import(fullPath);
+                    import(file);
                 } catch (error) {
                     console.error();
                     console.error(`[ERROR] Could not load controller :`.red);
-                    console.error(fullPath.white);
+                    console.error(file.white);
                     console.error();
                 }
             });
