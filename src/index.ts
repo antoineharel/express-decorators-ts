@@ -5,7 +5,7 @@ import "reflect-metadata";
 
 export interface RouteDefinition {
     path: string;
-    requestMethod: "get" | "post" | "delete" | "options" | "put";
+    requestMethod: "get" | "post" | "delete" | "options" | "put" | "patch";
     methodName: string;
     middlewares: RequestHandler[];
 }
@@ -73,6 +73,7 @@ export const Get = (path: string, middlewares: RequestHandler[] = []): MethodDec
 export const Post = (path: string, middlewares: RequestHandler[] = []): MethodDecorator => routeHandlerGenerator("post", path, middlewares);
 export const Put = (path: string, middlewares: RequestHandler[] = []): MethodDecorator => routeHandlerGenerator("put", path, middlewares);
 export const Delete = (path: string, middlewares: RequestHandler[] = []): MethodDecorator => routeHandlerGenerator("delete", path, middlewares);
+export const Patch = (path: string, middlewares: RequestHandler[] = []): MethodDecorator => routeHandlerGenerator("patch", path, middlewares);
 
 const registerOneController = (app: Application, controller: any) => {
     const instance = new controller() as any;
