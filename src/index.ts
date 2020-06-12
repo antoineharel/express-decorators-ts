@@ -2,6 +2,7 @@ import "colors";
 import { Application, RequestHandler, Router } from "express";
 import recursive from "recursive-readdir";
 import "reflect-metadata";
+import { ParamSchema, checkSchema, validationResult } from "express-validator";
 
 export interface RouteDefinition {
     path: string;
@@ -70,7 +71,7 @@ let routeHandlerGenerator = (method: RouteDefinition["requestMethod"], path: str
 };
 
 export const Get = (path: string, middlewares: RequestHandler[] = []): MethodDecorator => routeHandlerGenerator("get", path, middlewares);
-export const Post = (path: string, middlewares: RequestHandler[] = []): MethodDecorator => routeHandlerGenerator("post", path, middlewares);
+export const Post = (path: string, middlewares: any[] = []): MethodDecorator => routeHandlerGenerator("post", path, middlewares);
 export const Put = (path: string, middlewares: RequestHandler[] = []): MethodDecorator => routeHandlerGenerator("put", path, middlewares);
 export const Delete = (path: string, middlewares: RequestHandler[] = []): MethodDecorator => routeHandlerGenerator("delete", path, middlewares);
 export const Patch = (path: string, middlewares: RequestHandler[] = []): MethodDecorator => routeHandlerGenerator("patch", path, middlewares);
@@ -93,4 +94,21 @@ const registerOneController = (app: Application, controller: any) => {
     });
 
     app.use(prefix, controllerMiddlewares, router);
+};
+
+export const ValidateBody = (schema: Record<string, ParamSchema>, defaultLocations?: Location[] | undefined): MethodDecorator => {
+    let middleware = checkSchema(schema);
+    let validate: RequestHandler = (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(422).json({ errors: errors.array() });
+        }
+        next();
+    };
+    return (target: Object, propertyKey: any): void => {
+        const routes = Reflect.getMetadata("routes", target.constructor) as Array<RouteDefinition>;
+        let newRoutes = routes.map((route) => (route.methodName === propertyKey ? { ...route, middlewares: [...route.middlewares, middleware, validate] } : route));
+
+        Reflect.defineMetadata("routes", newRoutes, target.constructor);
+    };
 };
